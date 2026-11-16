@@ -1,15 +1,59 @@
+
+import math
+
+
 def parse_purchase(text):
-    grade, litres = text.split(':')
-    return grade.strip().title(), float(litres)
+    try:
+        if not isinstance(text, str) or text.count(':') != 1:
+            return None
+
+        grade, litres = text.split(':')
+        grade = grade.strip()
+        litres = float(litres.strip())
+
+        if not grade or not math.isfinite(litres) or litres <= 0:
+            return None
+
+        return grade.title(), litres
+
+    except (ValueError, TypeError):
+        return None
+
 
 def volume_average(volumes_csv):
-    values = [int(r) for r in volumes_csv.split(',')]
-    return sum(values) // len(values)
+    try:
+        if not isinstance(volumes_csv, str) or not volumes_csv.strip():
+            return None
+
+        values = [int(r.strip()) for r in volumes_csv.split(',')]
+
+        if not values or any(v < 0 for v in values):
+            return None
+
+        return sum(values) // len(values)
+
+    except (ValueError, TypeError):
+        return None
+
 
 def payable_bill(text):
-    bill, discount = text.split('|')
-    total = float(bill) * 1.18 - float(discount)
-    return max(total, 0)
+    try:
+        if not isinstance(text, str) or text.count('|') != 1:
+            return None
+
+        bill, discount = text.split('|')
+        bill = float(bill.strip())
+        discount = float(discount.strip())
+
+        if (not math.isfinite(bill) or not math.isfinite(discount)
+                or bill < 0 or discount < 0):
+            return None
+
+        total = bill * 1.18 - discount
+        return max(total, 0)
+
+    except (ValueError, TypeError):
+        return None
 
 def main():
     print("==== Running parse_purchase ====")
@@ -18,7 +62,7 @@ def main():
     print("Grade and Litres:", result)
 
     print("\n==== Running volume_average ====")
-    user_input = input("Enter pump volumes in litres as CSV (e.g. 10,25,40): ")
+    user_input = input("Enter pump volumes (e.g. 10,25,40): ")
     result = volume_average(user_input)
     print("Average Volume:", result)
 
@@ -26,6 +70,7 @@ def main():
     user_input = input("Enter bill|discount (e.g. 2500|100): ")
     result = payable_bill(user_input)
     print("Payable Bill:", result)
+
 
 if __name__ == "__main__":
     main()
